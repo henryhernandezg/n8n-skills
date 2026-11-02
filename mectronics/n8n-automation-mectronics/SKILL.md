@@ -1,6 +1,6 @@
 ---
 name: "n8n-automation-mectronics"
-description: "Usar siempre que se trabaje con n8n en Mectronics S.A. / Grupo Express (https://n8n.mectronics.com.co): crear, modificar, validar, probar, depurar o desplegar workflows; diagnosticar un flujo que falla o que cierra en success sin hacer nada; o ayudar a una persona de cualquier área a automatizar una tarea de su trabajo sin saber de n8n (modo guiado, con revisión de DDS). Incluye infraestructura, credenciales y patrones validados (WhatsApp, Outlook, Graph, Azure Blob/AI Search, Postgres, TFS, AI Foundry) más las guías oficiales de n8n."
+description: "Usar siempre que se trabaje con n8n en Mectronics S.A. / Grupo Express (https://n8n.mectronics.com.co): crear, modificar, validar, probar, depurar o desplegar workflows; diagnosticar un flujo que falla o que cierra en success sin hacer nada; o ayudar a una persona de cualquier área a automatizar una tarea de su trabajo sin saber de n8n (modo guiado: Claude construye, publica y verifica el flujo con la persona; si el MCP falla, guía la carga manual). Incluye infraestructura, credenciales y patrones validados (WhatsApp, Outlook, Graph, Azure Blob/AI Search, Postgres, TFS, AI Foundry) más las guías oficiales de n8n."
 ---
 
 # n8n — Mectronics
@@ -9,18 +9,18 @@ Una sola skill para todo lo de n8n en Mectronics. Tiene tres capas:
 
 1. **Conocimiento propio** (`references/mectronics/`): infraestructura, credenciales, restricciones y patrones medidos en producción.
 2. **Guías oficiales de n8n** (`references/oficial/`): buenas prácticas genéricas del equipo de n8n, copiadas sin modificar.
-3. **Modo guiado** (`references/agente/`): protocolo para que personas sin conocimiento técnico automaticen tareas de su puesto con control de riesgo y revisión de DDS.
+3. **Modo guiado** (`references/agente/`): protocolo para que personas sin conocimiento técnico automaticen tareas de su puesto: Claude lo construye, lo publica y lo verifica con ellas. Incluye plan B si el MCP no responde.
 
 ## 1. Elegir el modo (primer paso, siempre)
 
 | Modo | Cuándo | Qué hace Claude |
 |------|--------|-----------------|
 | **Técnico (DDS/TI)** | La persona es del equipo de desarrollo o TI, o pide algo técnico explícito (IDs de flujo, SDK, depurar, infraestructura, credenciales) | Trabaja como siempre: lee `references/mectronics/infraestructura-y-patrones.md` y las guías oficiales que apliquen. Puede publicar con confirmación. |
-| **Guiado (usuario final)** | La persona describe una tarea de su trabajo en lenguaje de negocio, o dice que no sabe de n8n | Sigue `references/agente/guiado.md`. Lenguaje simple, construye solo borradores, no publica. |
+| **Guiado (usuario final)** | La persona describe una tarea de su trabajo en lenguaje de negocio, o dice que no sabe de n8n | Sigue `references/agente/guiado.md`. Lenguaje simple. Construye, prueba, **publica con la confirmación de la persona** (Nivel 1 y 2) y verifica con un caso real. Nivel 3 lo hace DDS. Si el MCP falla: `sin-mcp.md`. |
 
 Si hay duda, preguntar una sola vez: *"¿Eres del equipo de desarrollo/TI, o es una tarea de tu área que quieres automatizar?"*
 
-El modo lo declara la persona. **Lo que realmente puede hacer en n8n lo limita el usuario/token de la conexión MCP, no esta skill.** Si esa conexión tiene permisos de administrador, el modo guiado es una norma de conducta, no un control de acceso. Decirlo a DDS si se detecta (ver `references/agente/riesgo.md`).
+El modo lo declara la persona. Lo que Claude puede tocar en n8n lo define el usuario de n8n de cada persona; la skill añade reglas de conducta encima (ver `references/agente/riesgo.md`).
 
 ## 2. Orden de prioridad cuando hay conflicto
 
@@ -36,9 +36,11 @@ El modo lo declara la persona. **Lo que realmente puede hacer en n8n lo limita e
 |---------|---------------|
 | `references/mectronics/infraestructura-y-patrones.md` | **Antes de construir o modificar cualquier flujo** que toque servidor, credenciales, WhatsApp, Outlook, Graph, Azure, Postgres, TFS o AI Foundry. Incluye restricciones de `update_workflow`, patrones y tabla de errores. |
 | `references/sdk-reference.md` | Escribir código del SDK de workflows |
-| `references/agente/guiado.md` | Modo guiado: conversación, pasos, lenguaje, qué decir y qué no |
-| `references/agente/riesgo.md` | Clasificar la tarea en Nivel 1/2/3 y saber qué puede hacer Claude en cada uno |
-| `references/agente/solicitud-y-revision.md` | Ficha de solicitud a DDS y lista de revisión antes de publicar |
+| `references/agente/guiado.md` | Modo guiado: pasos, de entender la tarea a publicar y verificar |
+| `references/agente/riesgo.md` | Clasificar la tarea en Nivel 1/2/3 y saber quién la construye y publica |
+| `references/agente/solicitud-y-revision.md` | Autoverificación antes de publicar, ficha de registro y revisión de DDS para Nivel 3 |
+| `references/agente/ejemplo-correo-a-excel.md` | Caso completo: correos de la bandeja de la persona → filas en un Excel de SharePoint |
+| `references/agente/sin-mcp.md` | El MCP no responde: entregar el flujo como archivo y guiar la carga y publicación en la UI |
 | `references/agente/casos.md` | Ejemplos de tareas frecuentes y su nivel de riesgo |
 | `references/oficial/UPSTREAM.md` | Origen, commit y fecha de las guías oficiales |
 
@@ -90,7 +92,9 @@ Las guías oficiales asumen n8n Cloud o planes de pago. Mectronics es Community 
 5. **Probar es ejecutar**: `test_workflow` fija disparadores, nodos con credencial y HTTP, pero **Data Tables, sub-workflows (Execute Workflow), File Read/Write y Code que toque estado externo corren de verdad**. Avisar y pedir confirmación antes si alguno aplica.
 6. **Un robot no borra trabajo humano**: la limpieza toca solo las columnas que el flujo escribe, con límite de seguridad.
 7. **Hecho vs supuesto**: si algo no está confirmado en esta instancia, decirlo.
-8. **Un flujo que cierra en success no prueba que hizo algo**: diseñar `ok: false` y `motivo` visibles en la bitácora.
+8. **Un flujo que cierra en success no prueba que hizo algo**: diseñar `ok: false` y `motivo` visibles en la bitácora, y verificar el resultado en el sistema de destino con un caso real.
+9. **Los flujos de usuarios usan credenciales de la propia persona.** Nunca las compartidas de DDS (Outlook DDS, Disciplinarios, Infraestructura, Graph DDS, WhatsApp, Azure, Postgres, TFS).
+10. **Si el MCP falla, no inventar**: reintentar una vez (buscando antes si ya se creó), decirlo y seguir `references/agente/sin-mcp.md`.
 
 ## 7. Mantenimiento
 
@@ -100,4 +104,5 @@ Las guías oficiales asumen n8n Cloud o planes de pago. Mectronics es Community 
 
 ## Historial de cambios de esta skill
 
+- **01/11/2026 (2)** — El modo guiado pasa a publicar: Claude construye, prueba, publica con confirmación de la persona y verifica con un caso real (Nivel 1 y 2); Nivel 3 sigue en DDS. Nuevas guías: `ejemplo-correo-a-excel.md` (con el requisito de permisos de correo en Entra, que no figura en la infraestructura documentada) y `sin-mcp.md` (carga manual del flujo si el MCP falla). Credenciales de usuario siempre propias.
 - **01/11/2026** — Skill única: se incorporan las 14 guías oficiales de n8n-io/skills (commit `ba099d8`, 17/10/2026) como referencias, se añade el modo guiado para usuarios finales (niveles de riesgo, solicitud y revisión por DDS) y la tabla de reglas Mectronics que prevalecen. El contenido anterior se conserva íntegro en `references/mectronics/`.

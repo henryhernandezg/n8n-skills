@@ -4,8 +4,9 @@ Ejemplos de diseño para orientar la conversación en modo guiado. **No son fluj
 
 | Tarea del puesto | Idea de automatización | Nivel | Observaciones |
 |------------------|------------------------|-------|---------------|
-| "Cada lunes se me olvida revisar X" | Recordatorio programado por correo a la propia persona | 1 | El caso más simple. Correo desde una credencial de Outlook que asigna DDS. |
-| "Reviso un Excel de SharePoint y mando un resumen" | Leer el libro con Graph, calcular y enviar un resumen a la propia persona | 1 | Leer no es escribir. Si el libro es de otra área, confirmar permisos con DDS. |
+| "Cada lunes se me olvida revisar X" | Recordatorio programado por correo a la propia persona | 1 | El caso más simple. Correo desde la credencial de Outlook de la propia persona. |
+| "Reviso un Excel de SharePoint y mando un resumen" | Leer el libro con Graph, calcular y enviar un resumen a la propia persona | 1 | Leer no es escribir. Si el libro es de otra área, confirmar que la persona tiene acceso. |
+| "Los correos que me llegan de X deben quedar en un Excel" | Disparador de Outlook + una escritura por ejecución en una Tabla de Excel en SharePoint | 2 | **Ejemplo completo en `ejemplo-correo-a-excel.md`.** Filtro obligatorio; dedup en Data Table; credenciales propias. |
 | "Aviso a mi equipo cuando hay pendientes" | Revisar una fuente y enviar un correo a un grupo | 2 | Destinatarios múltiples: revisar volumen y evitar repeticiones (dedup). |
 | "Consolido archivos que me llegan por correo" | Guardar adjuntos en una carpeta del área y registrar qué llegó | 2 | Usar solo columnas o carpetas propias; no borrar nada. Cuidado con bucles si el flujo responde desde el mismo buzón. |
 | "Clasifico correos o solicitudes" | Nodo de IA que etiqueta o resume y entrega el resultado a la persona | 2 | Revisar la calidad con ejemplos reales antes de confiar. Costo por uso de IA. |

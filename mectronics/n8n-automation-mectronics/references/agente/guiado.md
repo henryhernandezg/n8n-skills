@@ -1,65 +1,83 @@
 # Modo guiado — automatizar tareas del puesto de trabajo
 
-Para personas que conocen su trabajo pero no n8n. El objetivo es que salgan con una automatización bien pensada, probada en simulación y entregada a DDS para publicarla, sin que tengan que aprender la herramienta.
+Para personas que conocen su trabajo pero no n8n y tienen su propio usuario de n8n conectado por MCP. El objetivo es dejarles la automatización **construida, probada, publicada y verificada**, sin que tengan que aprender la herramienta.
 
-Antes de empezar leer `riesgo.md`. Al terminar usar `solicitud-y-revision.md`.
+Antes de empezar leer `riesgo.md`. Ejemplo completo: `ejemplo-correo-a-excel.md`. Si el MCP no responde: `sin-mcp.md`.
 
 ## Principios
 
 - **Habla del trabajo de la persona, no de nodos.** Nada de "Webhook", "expresión" o "JSON" salvo que ella los use. Si hace falta un término técnico, explicarlo en una frase.
 - **Máximo 3 preguntas por mensaje.** Si algo se puede asumir con seguridad, asumirlo y decirlo.
-- **Primero simplificar, luego automatizar.** Si un paso del proceso actual sobra, decirlo antes de construir. Automatizar una ineficiencia la hace más rápida, no mejor.
-- **Nunca prometer lo que no está confirmado.** Si no se sabe si es posible, decirlo y consultarlo con DDS.
-- **El agente construye borradores; DDS publica.** La persona debe saberlo desde el principio.
+- **Primero simplificar, luego automatizar.** Si un paso del proceso actual sobra, decirlo antes de construir.
+- **No prometer lo que no está confirmado.** Si no se sabe si es posible, decirlo.
+- **Terminar de verdad:** el trabajo no está hecho cuando el flujo se publica, sino cuando se vio funcionar con un caso real.
 
-## Los siete pasos
+## Los pasos
+
+### 0. Comprobar la conexión
+Confirmar que las herramientas del MCP de n8n responden (por ejemplo `search_workflows`). Si no están o fallan, seguir `sin-mcp.md`. **Antes de reintentar una creación que falló, buscar por nombre si el flujo ya quedó creado** (para no duplicarlo).
 
 ### 1. Entender el trabajo
-Preguntar lo mínimo: qué tarea es, cada cuánto se hace, qué hace hoy paso a paso, qué datos, archivos o sistemas toca y qué pasaría si falla o se olvida. Pregunta guía: *"¿Qué haces hoy a mano, y qué te gustaría dejar de hacer?"*
+Qué tarea es, cada cuánto, qué hace hoy paso a paso, qué datos, archivos o sistemas toca y qué pasa si falla. Pregunta guía: *"¿Qué haces hoy a mano, y qué quieres dejar de hacer?"* Cuando la tarea toca correo, pedir **cuáles correos** (carpeta, remitente o asunto): nunca copiar toda la bandeja.
 
 ### 2. Simplificar
 Revisar si algún paso se puede eliminar, unir o estandarizar antes de automatizar. Decir en una frase qué se simplificó.
 
 ### 3. Clasificar el riesgo
-Aplicar `riesgo.md` y decirlo en llano: *"Esta tarea es de Nivel 2: yo la preparo en borrador y DDS la revisa antes de dejarla funcionando."* Si es Nivel 3, explicar con amabilidad que la construye DDS y pasar directo al paso 7 (solo la ficha).
+Aplicar `riesgo.md` y decirlo en llano. Nivel 1 y 2: Claude lo construye y lo publica con la persona. Nivel 3: lo construye DDS; pasar a la ficha de `solicitud-y-revision.md`.
 
 ### 4. Mostrar el plan y pedir confirmación
 En lenguaje de negocio, antes de construir nada:
 
-> **Cuándo empieza:** cada lunes a las 7:00.
+> **Cuándo empieza:** cuando llegue un correo a la carpeta X.
 > **Qué hace:** 1) …  2) …  3) …
-> **A quién avisa:** …
-> **Si algo falla:** te llega un aviso a ti y a DDS; no se repite solo.
+> **Dónde deja el resultado:** …
+> **Si algo falla:** te llega un aviso; no se repite solo.
 > **Qué necesito de ti:** …
 
 Preguntar: *"¿Es esto lo que quieres?"* No construir hasta que diga que sí.
 
-### 5. Construir en borrador
-Por dentro se siguen las guías oficiales (ciclo de vida, expresiones, configuración de nodos, manejo de errores) y `infraestructura-y-patrones.md` si toca sistemas de Mectronics. Reglas fijas del borrador:
+### 5. Credenciales propias (antes de construir)
+Una credencial es el permiso de acceso al correo, SharePoint, etc. **El flujo debe usar credenciales de la propia persona**:
 
-- Nombre: `USR-<área>-<persona>-<qué hace>` (por ejemplo `USR-Compras-mperez-recordatorio-facturas`). Carpeta `USR-Borradores` si las herramientas de carpeta existen; si no, solo el prefijo.
-- **Flujo nuevo siempre.** No se modifica ningún flujo que no tenga el prefijo `USR-` y que no haya creado esta misma persona.
-- **Sin publicar.** No usar `publish_workflow` ni activar disparadores.
-- **Con parámetro de simulación** (`SIMULAR = true`) en un nodo `Configuracion` al inicio, como en los flujos masivos de Mectronics.
-- **Con ramas de error** en cada paso que pueda fallar, y aviso al responsable (la persona) y a DDS.
-- **Descripción del flujo** que cuente el porqué (para quien lo herede) y datos de contacto de la persona.
-- Si algún paso necesita una credencial (correo, SharePoint, base de datos), construir el paso, **no asignar ni crear credenciales** y dejarlo anotado: lo resuelve DDS en la revisión.
+- Revisar las credenciales disponibles (`list_credentials`). Usar solo las que sean de ella.
+- **No atar nunca un flujo de usuario a las credenciales compartidas de DDS** (`Microsoft Outlook DDS`, `Microsoft Outlook Correo Disciplinarios`, `Microsoft Outlook Correo Infraestructura Mectronics`, `Microsoft Graph DDS`, WhatsApp, Azure, Postgres, TFS): leerían buzones o archivos que no son suyos. Si alguna aparece visible para la persona, no usarla y avisar a DDS.
+- Si falta su credencial de Microsoft, se la crea ella en n8n (Credentials → Create → tipo "Microsoft Outlook OAuth2" o "Microsoft Excel OAuth2" → Sign in with Microsoft). Si el formulario pide Client ID y Client Secret, los entrega DDS; **nunca** pedírselos ni pegarlos en el chat.
+- Claude no crea credenciales ni recibe secretos.
 
-### 6. Probar en simulación
-Usar `prepare_workflow_pin_data` y `test_workflow` con datos de ejemplo. Recordar que **Data Tables, sub-workflows y archivos locales corren de verdad**: en modo guiado no incluirlos en el borrador, o dejarlos fuera del camino de prueba. Contar el resultado en llano: *"En la simulación habría enviado 3 correos, a estas personas: …"*, y pedir que revise si los datos de ejemplo se parecen a la realidad.
+### 6. Construir
+Flujo **nuevo** con nombre `USR-<área>-<persona>-<qué hace>`. Por dentro se siguen las guías oficiales (ciclo de vida, expresiones, configuración de nodos, manejo de errores) y `infraestructura-y-patrones.md` si toca sistemas de Mectronics. Reglas fijas:
 
-### 7. Entregar a DDS
-Generar la ficha de `solicitud-y-revision.md` y explicar qué sigue: DDS revisa, ajusta credenciales, prueba con control y publica. **Mientras eso no ocurra, el flujo no se ejecuta solo.** No prometer plazos.
+- Carpeta `USR-Borradores` si hay herramientas de carpeta; si no, solo el prefijo.
+- Descripción del flujo que cuente el porqué y quién es la responsable.
+- **Ramas de error** en cada paso que pueda fallar, con aviso a la persona.
+- Estado que debe sobrevivir entre ejecuciones (por ejemplo "este correo ya se procesó"): Data Table propia del flujo; **nunca** `staticData`.
+- Después de crear: `validate_workflow` y además `get_workflow_details` para revisar las conexiones.
 
-Cerrar siempre con un resumen de tres líneas: qué quedó hecho, en qué estado está (borrador / simulado / enviado a DDS) y cuál es el siguiente paso.
+### 7. Probar
+`prepare_workflow_pin_data` y `test_workflow` con datos de ejemplo. Recordar que **Data Tables, sub-workflows y archivos locales corren de verdad** en la prueba: usar identificadores de prueba (`TEST-…`) y limpiarlos después. Contar el resultado en llano.
+
+### 8. Publicar
+Solo cuando se cumplan las tres condiciones:
+1. La persona abrió **cada nodo con credencial en la UI** y confirmó que es su cuenta (n8n asigna por defecto la credencial más reciente del tipo; la API no dice cuál quedó).
+2. Validación limpia y conexiones verificadas.
+3. La persona dijo expresamente que sí: *"¿Lo dejo funcionando solo?"*
+
+Entonces `publish_workflow`. No se usa `update_workflow` sobre un flujo ya publicado con webhook, WhatsApp o formulario (ver reglas de la skill).
+
+### 9. Verificar con un caso real
+Pedirle a la persona que provoque un caso real (por ejemplo, enviarse un correo de prueba). Esperar el ciclo del disparador, revisar la ejecución (`search_workflow_executions` / `get_workflow_execution`) y **que la persona confirme el resultado en su sistema** (la fila en el Excel). Un `success` en n8n no basta. Si no aparece, depurar con la guía de depuración y la tabla de errores comunes antes de dar el trabajo por terminado.
+
+### 10. Cerrar
+Resumen en tres líneas: qué hace, que ya está funcionando y cómo se apaga (`unpublish_workflow` o pedírselo a Claude), y a quién acudir (DDS). Dejar la ficha de `solicitud-y-revision.md` como registro.
 
 ## Qué no hacer nunca en modo guiado
 
-- No pedir, aceptar ni reutilizar contraseñas, claves o tokens. Si la persona los pega en el chat: decirle que no los comparta, que no se usarán, y que avise a DDS si eran reales para que los rote.
-- No publicar, ejecutar en real, archivar, mover ni editar flujos existentes que no sean los suyos `USR-`.
-- No mostrar identificadores internos, nombres de credenciales, URLs de servicios ni detalles de infraestructura, salvo que DDS los pida.
-- No tocar WhatsApp, Azure Blob/AI Search, TFS ni sistemas productivos de SIEF/Sie7e (Nivel 3).
-- No automatizar datos de nómina, personas, disciplinarios ni financieros sin que DDS lo construya (Nivel 3).
+- No pedir, aceptar ni reutilizar contraseñas, claves o tokens. Si la persona los pega: decirle que no los comparta y que avise a DDS si eran reales para rotarlos.
+- No editar, mover, archivar ni publicar flujos que no sean los suyos `USR-`.
+- No atar flujos a credenciales compartidas de DDS.
+- No mostrar identificadores internos, nombres de credenciales compartidas ni detalles de infraestructura, salvo que DDS los pida.
+- No construir Nivel 3 (ver `riesgo.md`).
 - No inventar integraciones. Si no hay conector o no se sabe, se consulta a DDS.
 
 ## Traducciones útiles
@@ -68,12 +86,11 @@ Cerrar siempre con un resumen de tres líneas: qué quedó hecho, en qué estado
 |-----------------|--------------|
 | Disparador / trigger | Lo que lo pone en marcha |
 | Nodo | Un paso |
-| Credencial | El permiso de acceso que administra DDS |
-| Publicar / activar | Dejarlo funcionando solo |
+| Credencial | El permiso de acceso a tu correo / tu SharePoint |
+| Publicar | Dejarlo funcionando solo |
 | Simulación | Prueba sin enviar ni guardar nada de verdad |
 | Rama de error | Qué pasa si algo falla |
 | Flujo / workflow | La automatización |
 
-## Si la persona pide algo que ya existe o quiere cambiarlo
-
-No tocar el flujo existente. Preguntar qué quiere cambiar, anotarlo en una ficha de **cambio** (misma plantilla de `solicitud-y-revision.md`, con el nombre del flujo) y entregarla a DDS.
+## Si la persona quiere cambiar un flujo suyo ya publicado
+Cambios que no tocan el disparador: se hacen sobre su propio flujo `USR-` y se verifican como en los pasos 6 a 9. Si el flujo tiene webhook, WhatsApp o formulario, no usar `update_workflow` (regenera el `webhookId`): se edita a mano en la UI.
