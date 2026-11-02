@@ -64,6 +64,8 @@ chk "Plan B: reintento único y búsqueda previa anti-duplicado" "grep -qi 'una 
 chk "Requisito Entra de correo declarado como pendiente"       "grep -q 'AADSTS65001' '$G/ejemplo-correo-a-excel.md'"
 chk "Nivel 3 reservado a DDS (WhatsApp, nómina, SIEF)"         "grep -qi 'WhatsApp' '$G/riesgo.md' && grep -qi 'DDS' '$G/riesgo.md'"
 
+chk "Reglas de versión: errorWorkflow 2.29.0+ no disponible en 2.18.7" "grep -q 'errorWorkflow' '$S/SKILL.md' && grep -q '2.18.7' '$S/SKILL.md'"
+
 echo "6. Coherencia (frases contradictorias que ya se corrigieron)"
 chk "Ninguna guía dice que el usuario NO publica"              "! grep -rniE 'no (puede|debe) publicar|solo DDS publica|DDS publica' '$G' '$S/SKILL.md'"
 

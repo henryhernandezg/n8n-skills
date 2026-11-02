@@ -82,6 +82,10 @@ Las guías oficiales asumen n8n Cloud o planes de pago. Mectronics es Community 
 | Crear carpetas por MCP | Requiere instancia registrada (gratis, en Ajustes). Si faltan las herramientas de carpeta, pedir a DDS que registre la instancia o usar un prefijo en el nombre del flujo. |
 | `save_user_preference`, Agents de n8n y otras herramientas "tras bandera" | No confirmado en esta instancia. Comprobar que la herramienta exista antes de planear sobre ella; si no existe, seguir sin ella. |
 | El Code node es último recurso | Se mantiene. Excepciones validadas aquí: binarios (`prepareBinaryData`), diagnóstico, agregación multi-fuente. |
+| Flujo de error global con `setWorkflowSettings.errorWorkflow` (n8n 2.29.0+) | La instancia está en 2.18.7: **esa operación no existe aquí**. Asignar el flujo de error a mano en Ajustes del flujo (UI) y, mientras tanto, cada nodo que falle lleva su salida de error con aviso a la persona. |
+| `Merge` con varias entradas usando `.input(n)` (corregido en 2.21.4) | En 2.18.7 el selector se ignora y todo llega a la entrada 0. Evitar Merge de más de dos entradas; encadenar Merges de dos y verificar el resultado. |
+| Rollback con `versionId` en `publish_workflow` y grupos de nodos (2.29.0+ / 2.33.0+) | No disponibles en 2.18.7. Antes de cambiar un flujo publicado, exportar su JSON; los grupos de nodos no se usan. |
+| Cualquier función de las guías con "n8n X.Y.Z+" mayor que 2.18.7 | Comprobar la herramienta en vivo (`search_nodes`, lista de herramientas MCP) antes de planear sobre ella; si no existe, usar el equivalente manual. |
 
 ## 6. Reglas no negociables (ambos modos)
 
@@ -104,5 +108,6 @@ Las guías oficiales asumen n8n Cloud o planes de pago. Mectronics es Community 
 
 ## Historial de cambios de esta skill
 
+- **01/11/2026 (3)** — Prueba de la skill: se detectan funciones de las guías oficiales que exigen versiones posteriores a la 2.18.7 (flujo de error global 2.29.0+, Merge con `.input(n)` 2.21.4+, rollback por `versionId`, grupos de nodos); se añaden a la tabla de reglas con su equivalente manual.
 - **01/11/2026 (2)** — El modo guiado pasa a publicar: Claude construye, prueba, publica con confirmación de la persona y verifica con un caso real (Nivel 1 y 2); Nivel 3 sigue en DDS. Nuevas guías: `ejemplo-correo-a-excel.md` (con el requisito de permisos de correo en Entra, que no figura en la infraestructura documentada) y `sin-mcp.md` (carga manual del flujo si el MCP falla). Credenciales de usuario siempre propias.
 - **01/11/2026** — Skill única: se incorporan las 14 guías oficiales de n8n-io/skills (commit `ba099d8`, 17/10/2026) como referencias, se añade el modo guiado para usuarios finales (niveles de riesgo, solicitud y revisión por DDS) y la tabla de reglas Mectronics que prevalecen. El contenido anterior se conserva íntegro en `references/mectronics/`.
